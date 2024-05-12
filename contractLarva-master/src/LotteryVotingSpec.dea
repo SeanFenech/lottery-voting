@@ -1,0 +1,33 @@
+monitor CLCompatableLotteryVoting {
+	initialisation {
+		LARVA_EnableContract();
+	}
+	reparation {
+		revert();		
+	}
+	DEA NoCandidateChange {
+		states {
+			AlternativeStates: initial;
+			CandidatePeriod;
+			CandidateChange: bad;
+		}
+		transitions {
+			AlternativeStates -[after(openElection)]-> CandidatePeriod;
+			CandidatePeriod -[after(openVotingPeriod)]-> AlternativeStates;
+			AlternativeStates -[s_candidates@(s_candidates[_index] != LARVA_previous_s_candidates)]-> CandidateChange;
+		}
+	}
+
+	DEA NoVoterDecrease {
+		states {
+			AlternativeStates: initial;
+			VotingPeriod;
+			VoterDecrease: bad;
+		}
+		transitions {
+			AlternativeStates -[after(openVotingPeriod)]-> VotingPeriod;
+			VotingPeriod -[after(closeElection)]-> AlternativeStates;
+			AlternativeStates -[s_votes@(s_votes[_index] < LARVA_previous_s_votes)]-> VoterDecrease;
+		}
+	}
+}
